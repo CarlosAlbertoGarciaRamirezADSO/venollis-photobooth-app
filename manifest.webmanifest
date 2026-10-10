@@ -1,0 +1,16 @@
+{
+  "name": "Venollis Photo Booth Studio",
+  "short_name": "Venollis",
+  "description": "Fotocabina para eventos: fotos, GIF, video y collages con plantillas",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B3C40",
+  "theme_color": "#0B3C40",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
