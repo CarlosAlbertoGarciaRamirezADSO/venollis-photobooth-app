@@ -3,10 +3,18 @@
 // 2. Guarda la propia app para que abra sin internet.
 
 const FILES = 'venollis-files'
-const SHELL = 'venollis-app-v1'
+const SHELL = 'venollis-app-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
-self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
+self.addEventListener('activate', (event) =>
+  event.waitUntil(
+    // Se descartan las copias de versiones anteriores de la app (las fotos guardadas están en otro almacén y no se tocan).
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith('venollis-app-') && key !== SHELL).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
+  )
+)
 
 /** Los videos piden trozos del archivo (Range); sin esto no se reproducen en iPhone. */
 async function ranged(response, header) {
@@ -38,11 +46,13 @@ async function savedFile(request) {
 async function appFile(request) {
   const cache = await caches.open(SHELL)
   try {
-    const response = await fetch(request)
-    if (response.ok) void cache.put(request, response.clone())
+    // La página principal se pide siempre al servidor, sin la copia del navegador: así llegan las actualizaciones.
+    const isPage = request.mode === 'navigate' || new URL(request.url).pathname.endsWith('.html')
+    const response = await fetch(request, isPage ? { cache: 'no-store' } : undefined)
+    if (response.ok) void cache.put(request.url.split('?')[0], response.clone())
     return response
   } catch {
-    return (await cache.match(request)) || (await cache.match('./index.html')) || Response.error()
+    return (await cache.match(request.url.split('?')[0])) || (await cache.match(new URL('./', self.registration.scope).href)) || Response.error()
   }
 }
 
